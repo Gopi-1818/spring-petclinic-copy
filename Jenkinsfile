@@ -1,10 +1,16 @@
 pipeline {
     agent any
 
+    // Use Jenkins-managed Maven tool
+    tools {
+        maven 'Maven-3' // <-- this must match the name you set in Global Tool Configuration
+    }
+
     stages {
         stage('Build') {
             steps {
-                sh '/usr/share/maven/bin/mvn clean package'
+                // 'mvn' is now available in PATH automatically
+                sh 'mvn clean package'
             }
         }
 
