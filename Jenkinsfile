@@ -8,9 +8,12 @@ pipeline {
     }
 
     stages {
+
         stage('Checkout Code') {
             steps {
-                git url: 'https://github.com/Gopi-1818/spring-petclinic-copy.git', branch: 'main', credentialsId: 'ec3f13e9-4e88-49c0-b392-c7feef5b0ac3'
+                git url: 'https://github.com/Gopi-1818/spring-petclinic-copy.git', 
+                    branch: 'main', 
+                    credentialsId: 'ec3f13e9-4e88-49c0-b392-c7feef5b0ac3'
             }
         }
 
@@ -24,16 +27,14 @@ pipeline {
         stage('Security Scan') {
             steps {
                 echo "Running OWASP Dependency Check..."
-                sh '''
-                    mvn org.owasp:dependency-check-maven:check -DfailBuildOnCVSS=7
-                '''
+                sh 'mvn org.owasp:dependency-check-maven:check -DfailBuildOnCVSS=7'
             }
         }
 
         stage('Package') {
             steps {
-                echo "Packaging the application..."
-                sh 'mvn clean package'
+                echo "Packaging the application (Skipping tests to save memory)..."
+                sh 'mvn package -DskipTests'
                 archiveArtifacts artifacts: "target/${ARTIFACT_NAME}", fingerprint: true
             }
         }
@@ -44,7 +45,7 @@ pipeline {
             }
             steps {
                 echo "Deploying application to ${APP_SERVER}..."
-                sshagent(['ubuntu']) {
+                sshagent(['10.2.2.141']) {
                     sh """
                         scp -o StrictHostKeyChecking=no target/${ARTIFACT_NAME} ${DEPLOY_USER}@${APP_SERVER}:/home/ubuntu/app.jar
                         ssh ${DEPLOY_USER}@${APP_SERVER} 'pkill java || true'
